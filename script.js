@@ -1,165 +1,161 @@
 let squareArray = [];
 let x = true;
-let row =3;
-let isRobo ;
+let row = 3;
+let isRobo;
 let wid = 90;
-function gameType(v){
+
+function gameType(v) {
   isRobo = v;
   restart();
 }
-function setBordWid(v){
- row = v;
- switch (v) {
+
+function setBordWid(v) {
+  row = v;
+  switch (v) {
     case 3:
-      wid = 90;  
-      restart();
-        break;
+      wid = 90;
+      break;
     case 4:
-    wid = 80;
-    restart();
-    break;
+      wid = 80;
+      break;
     case 5:
-    wid = 70;
-    restart();
-    break;
+      wid = 70;
+      break;
     case 6:
-    wid = 60;
-    restart();
-    break;
+      wid = 60;
+      break;
     default:
-    wid = 90; 
-    restart();
-        break;
- }
-}
-setBoard()
-function setBoard() {
-    let board = document.getElementsByClassName("board")[0]; // Get the first element with class "board"
-    for (let i = 0; i < row; i++) {
-        squareArray[i] = [];
-        for (let j = 0; j < row; j++) {
-            let div = document.createElement('div');
-            div.classList.add('squar');
-            div.id = `${i}_${j}`;
-            squareArray[i][j] = div.id;
-            div.addEventListener('click', () => ifClick(div));
-            div.style.width = `${wid}px`;
-            div.style.height = `${wid}px`;
-            board.appendChild(div);
-        }
-    }
-    board.style.width = `${wid * row + 2*(row*2)}px`;
-    board.style.height = `${wid * row+ 2*(row*2) }px`;
+      wid = 90;
+      break;
+  }
+  restart();
 }
 
- function ifClick(div) {
-    let element = div;
-    if (element.classList.contains("x") || element.classList.contains("o")) {
-      // Element already has a class of "x" or "o", do nothing
-    }else{
-        let h1 = document.createElement('h1');
-        if (x) {
-            h1.innerHTML = '✖️';
-            element.classList.add("x");
-            addToArray(div.id);
-            x = false;
-        } else {
-            h1.innerHTML = '⭕️';
-            element.classList.add("o");
-            addToArray(div.id);
-            x = true;
-        }
-        div.appendChild(h1);
-        winCheck();
+function setBoard() {
+  let board = document.getElementsByClassName("board")[0];
+  board.innerHTML = ''; 
+  squareArray = [];
+
+  for (let i = 0; i < row; i++) {
+    squareArray[i] = [];
+    for (let j = 0; j < row; j++) {
+      let div = document.createElement('div');
+      div.classList.add('squar');
+      div.id = `${i}_${j}`;
+      squareArray[i][j] = div.id;
+      div.addEventListener('click', () => ifClick(div));
+      div.style.width = `${wid}px`;
+      div.style.height = `${wid}px`;
+      board.appendChild(div);
     }
-    if (isRobo && !x) {
-        setTimeout(robo, 500);
-    }
+  }
+  board.style.width = `${wid * row + 2 * (row * 2)}px`;
+  board.style.height = `${wid * row + 2 * (row * 2)}px`;
+}
+
+function ifClick(div) {
+  if (div.classList.contains("x") || div.classList.contains("o")) return;
+
+  let h1 = document.createElement('h1');
+  h1.innerHTML = x ? '✖️' : '⭕️';
+  div.classList.add(x ? "x" : "o");
+  div.appendChild(h1);
+
+  addToArray(div.id);
+  x = !x;
+
+  winCheck();
+
+  if (isRobo && !x) setTimeout(robo, 500);
 }
 
 function addToArray(id) {
+  for (let i = 0; i < row; i++) {
+    for (let j = 0; j < row; j++) {
+      if (id === squareArray[i][j]) {
+        squareArray[i][j] = x ? 'x' : 'o';
+      }
+    }
+  }
+}
+// Function to dynamically check all possible winning conditions
+function winCheck() {
+    // Check rows
     for (let i = 0; i < row; i++) {
-        for (let j = 0; j < row; j++) {
-            if (id == squareArray[i][j]) {
-                x ? squareArray[i][j] = 'x' : squareArray[i][j] = 'o';
+        for (let j = 0; j <= row - 3; j++) {
+            if (
+                squareArray[i][j] === squareArray[i][j + 1] &&
+                squareArray[i][j + 1] === squareArray[i][j + 2] &&
+                squareArray[i][j] !== `${i}_${j}`
+            ) {
+                setLine(i, j, 'horizontal');
+                alerts(squareArray[i][j]);
+                return;
+            }
+        }
+    }
+
+    // Check columns
+    for (let i = 0; i < row; i++) {
+        for (let j = 0; j <= row - 3; j++) {
+            if (
+                squareArray[j][i] === squareArray[j + 1][i] &&
+                squareArray[j + 1][i] === squareArray[j + 2][i] &&
+                squareArray[j][i] !== `${j}_${i}`
+            ) {
+                setLine(j, i, 'vertical');
+                alerts(squareArray[j][i]);
+                return;
+            }
+        }
+    }
+
+    // Check main diagonals
+    for (let i = 0; i <= row - 3; i++) {
+        for (let j = 0; j <= row - 3; j++) {
+            if (
+                squareArray[i][j] === squareArray[i + 1][j + 1] &&
+                squareArray[i + 1][j + 1] === squareArray[i + 2][j + 2] &&
+                squareArray[i][j] !== `${i}_${j}`
+            ) {
+                setLine(i, j, 'diagonal');
+                alerts(squareArray[i][j]);
+                return;
+            }
+            if (
+                squareArray[i][j + 2] === squareArray[i + 1][j + 1] &&
+                squareArray[i + 1][j + 1] === squareArray[i + 2][j] &&
+                squareArray[i][j + 2] !== `${i}_${j + 2}`
+            ) {
+                setLine(i, j + 2, 'anti-diagonal');
+                alerts(squareArray[i][j + 2]);
+                return;
             }
         }
     }
 }
 
-function winCheck() {
-    for(let i=0; i<row-2; i++){
-        for(let j=0; j<row-2; j++){
-                  // Check main diagonal (\)
-    if (squareArray[i][j] === squareArray[i + 1][j + 1] && 
-        squareArray[i + 1][j + 1] === squareArray[i + 2][j + 2] && 
-        squareArray[i][i] !== `${i}_${j}`) {
-            let type = "diagonal";
-      setLine(i,j,type);
-
-        alerts(squareArray[i][j]);
-    }
-    // Check anti-diagonal (/)
-    if (squareArray[i][row - j - 1] === squareArray[i + 1][row - j - 2] && 
-        squareArray[i + 1][row - j - 2] === squareArray[i + 2][row - j - 3] && 
-        squareArray[i][row - j - 1] !== `${i}_${row - j - 1}`) {
-        alerts(squareArray[i][row - j - 1]);
-        let type = "anti-diagonal";
-        setLine(i,j,type);
-       }
-     }
-    }
-   
-    // Check rows and columns
-    for (let i = 0; i < row; i++) {
-       for(let j = 0; j < row-2; j++){
-        if (squareArray[i][j] === squareArray[i][j+1] && squareArray[i][j+1] === squareArray[i][j+2] && squareArray[i][j+0] !== `${i}_${j}`) {
-            let type = "horizontal";
-        setLine(i,j,type);
-            alerts(squareArray[i][j]);
-        }
-        if (squareArray[j][i] === squareArray[j+1][i] && squareArray[j+1][i] === squareArray[j+2][i] && squareArray[j][i] !== `${j}_${i}`) {
-            let type = "vertical";
-        setLine(i,j,type);
-            alerts(squareArray[j][i]);
-        }
-       }
-    }
-}
 
 function setLine(i, j, type) {
-    console.log(`Setting line type ${type} at (${i},${j})`);
-    if (type === "diagonal") {
-        
-        for(let n = 0; n < 3; n++){
-            let element = document.getElementById(`${i+n}_${j+n}`);
-            if (element) {
-                element.style.backgroundColor = 'blue';
-            }
-        }
-    } else if (type === "horizontal") {
-        for(let n = 0; n < 3; n++){
-            let element = document.getElementById(`${i}_${j+n}`);
-            if (element) {
-                element.style.backgroundColor = 'blue';
-            }
+    if (type === "horizontal") {
+        for (let n = 0; n < 3; n++) {
+            document.getElementById(`${i}_${j + n}`).classList.add('winning-line');
         }
     } else if (type === "vertical") {
-        for(let n = 0; n < 3; n++){
-            let element = document.getElementById(`${i+n}_${j}`);
-            if (element) {
-                element.style.backgroundColor = 'blue';
-            }
+        for (let n = 0; n < 3; n++) {
+            document.getElementById(`${i + n}_${j}`).classList.add('winning-line');
+        }
+    } else if (type === "diagonal") {
+        for (let n = 0; n < 3; n++) {
+            document.getElementById(`${i + n}_${j + n}`).classList.add('winning-line');
         }
     } else if (type === "anti-diagonal") {
-        for(let n = 0; n < 3; n++){
-            let element = document.getElementById(`${i+n}_${j-n}`);
-            if (element) {
-                element.style.backgroundColor = 'blue';
-            }
+        for (let n = 0; n < 3; n++) {
+            document.getElementById(`${i + n}_${j - n}`).classList.add('winning-line');
         }
     }
 }
+
 
 
 function alerts(w){
@@ -291,5 +287,32 @@ function goodPosition() {
             }
         }
     }
+}
+
+
+function drawWinningLine(squares) {
+    const line = document.getElementById("win-line");
+    const board = document.querySelector(".board");
+
+    // Coordinates of the first and last square in the winning line
+    const startSquare = document.querySelector(`.squar[data-index="${squares[0]}"]`);
+    const endSquare = document.querySelector(`.squar[data-index="${squares[2]}"]`);
+
+    // Calculate position and size for the line
+    const startX = startSquare.offsetLeft + startSquare.offsetWidth / 2;
+    const startY = startSquare.offsetTop + startSquare.offsetHeight / 2;
+    const endX = endSquare.offsetLeft + endSquare.offsetWidth / 2;
+    const endY = endSquare.offsetTop + endSquare.offsetHeight / 2;
+
+    const deltaX = endX - startX;
+    const deltaY = endY - startY;
+    const length = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    // Set line size, position, and rotation
+    line.style.width = `${length}px`;
+    line.style.left = `${startX}px`;
+    line.style.top = `${startY}px`;
+    line.style.transform = `rotate(${Math.atan2(deltaY, deltaX)}rad)`;
+    line.style.display = "block"; // Show the line
 }
 
